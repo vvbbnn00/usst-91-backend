@@ -56,7 +56,7 @@ def http_get_welink_card():
                 {
                     "type": "market_item_store_nine_indicator",
                     "title": "今日宣讲会",
-                    "action": "https://91.usst.edu.cn/InformationNAVList.aspx?RA=1",
+                    "action": "h5://20211018231353983577841/index.html",
                     "number": today_cru,
                     "unit": "场",
                     "numberColor": "#333333",
@@ -65,7 +65,7 @@ def http_get_welink_card():
                     "number": tomorrow_cru,
                     "unit": "场",
                     "numberColor": "#333333",
-                    "action": "https://91.usst.edu.cn/InformationNAVList.aspx?RA=1",
+                    "action": "h5://20211018231353983577841/index.html",
                     "title": "明日宣讲会",
                     "unitColor": "#999999",
                     "type": "market_item_store_nine_indicator"
@@ -74,7 +74,7 @@ def http_get_welink_card():
                     "unit": "场",
                     "numberColor": "#333333",
                     "title": "今日招聘会",
-                    "action": "https://91.usst.edu.cn/InformationNAVList.aspx?RA=1",
+                    "action": "h5://20211018231353983577841/index.html",
                     "unitColor": "#999999",
                     "type": "market_item_store_nine_indicator"
                 }
