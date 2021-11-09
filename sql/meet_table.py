@@ -5,20 +5,23 @@ import time
 
 
 def query_meet_table(start_date=None, end_date=None,
-                     kw=None, _id=None, limit=30, q_from=0):
+                     kw=None, _id=None, limit=30,
+                     page=0, date_order="desc"):
     """
     查询数据库并返回招聘会基础数据
+    :param date_order: 日期排序参数
     :param start_date: 开始日期
     :param end_date:  结束日期
     :param kw: 查询关键词
     :param _id: 指定id查询
     :param limit: 返回数据数量限制
-    :param q_from: 从哪个id开始查询，默认为0
+    :param page: 分页参数
     :return: 包装好的数据
     """
-    start_timestamp = time.time() * 1000
-    query_list = [f"MeetID>'{q_from}'", "FabuFlag='是'"]
+    query_list = ["FabuFlag='是'"]
     db = get_mssql()
+    if page == 0:
+        page = 1
     if db['code'] < 0:
         return db
     db = db['sql']
@@ -33,8 +36,9 @@ def query_meet_table(start_date=None, end_date=None,
         query_list.append(f"MeetName like '%{kw}%'")
 
     try:
-        sql = f"select top {limit} [MeetID],[MeetName],[MeetAddress],[MeetStart],[MeetEnd],[AppStart],[AppEnd]" \
-              f" from IJCenterOfCareer_LiXin.dbo.[MeetTable] where {' and '.join(query_list)}"
+        sql = f"select [MeetID],[MeetName],[MeetAddress],[MeetStart],[MeetEnd],[AppStart],[AppEnd]" \
+              f" from IJCenterOfCareer_LiXin.dbo.[MeetTable] where {' and '.join(query_list)} " \
+              f"order by MeetStart {date_order} offset {(page - 1) * limit} rows fetch next {limit} rows only"
         cursor.execute(sql)
         result = cursor.fetchall()
 
@@ -52,9 +56,8 @@ def query_meet_table(start_date=None, end_date=None,
         db.close()
         return {
             "code": 0,
-            "timeCost": time.time() * 1000 - start_timestamp,
             "hasMore": limit == len(data),
-            "next": "" if len(data) == 0 else data[-1]['MeetID'],
+            "next": page + 1,
             "data": data,
             "length": len(data)
         }
@@ -72,7 +75,6 @@ def count_meet_table(start_date=None, end_date=None, kw=None):
     :param kw: 查询关键词
     :return: 包装好的数据
     """
-    start_timestamp = time.time() * 1000
     search_list = ["FabuFlag='是'"]
     db = get_mssql()
     if db['code'] < 0:
@@ -95,7 +97,6 @@ def count_meet_table(start_date=None, end_date=None, kw=None):
         db.close()
         return {
             "code": 0,
-            "timeCost": time.time() * 1000 - start_timestamp,
             "total": result
         }
     except:

@@ -171,7 +171,7 @@ def get_sub_list(welink_id=None, sub_type=None, sub_id=None, limit=30, q_from=No
     sql = f"select id,welink_id,sub_type,sub_id,calendar_id from usst91.subscription_list "
     if len(search_list) > 0:
         sql += f"where ({') and ('.join(search_list)})"
-    sql += f"ORDER BY Id DESC limit {limit}"
+    sql += f" ORDER BY Id DESC limit {limit}"
     cursor.execute(sql)
     result = cursor.fetchall()
     db.close()
@@ -202,7 +202,7 @@ def delete_sub(welink_id=None, sub_type=None, sub_id=None):
     db = db['sql']
     cursor = db.cursor()
     sql = f"select calendar_id from usst91.subscription_list where " \
-          f"welink_id='{welink_id}' and sub_type={sub_type} and sub_id='{sub_id}'and status=0"
+          f"welink_id='{welink_id}' and sub_type={sub_type} and sub_id='{sub_id}'and status=0 "
     cursor.execute(sql)
     result = cursor.fetchone()
     if not result:
@@ -215,7 +215,7 @@ def delete_sub(welink_id=None, sub_type=None, sub_id=None):
     if result['code'] != 0:
         return result
     sql = f"update usst91.subscription_list set status=1 where " \
-          f"welink_id='{welink_id}' and sub_type={sub_type} and sub_id='{sub_id}' and status=0"
+          f"welink_id='{welink_id}' and sub_type={sub_type} and sub_id='{sub_id}' and status=0 "
     cursor.execute(sql)
     db.commit()
     db.close()

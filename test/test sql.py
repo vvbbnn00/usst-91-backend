@@ -1,5 +1,7 @@
-#
-#
+from sql.recruitment import *
+
+if __name__ == '__main__':
+    print(query_recruitment())
 # if __name__ == '__main__':
 #     # print(create_sub_item(welink_id="lutiancheng_659@usst", sub_id="22300", sub_type=0))
 #     # print(create_sub_item(welink_id="lutiancheng_659@usst", sub_id="22301", sub_type=0))

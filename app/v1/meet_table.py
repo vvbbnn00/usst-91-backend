@@ -1,6 +1,11 @@
 from flask import *
+
+from sql import cache
+from sql.calendar import get_sub_list
 from sql.meet_table import *
 import re
+
+from utils.welink import get_cache_uid
 
 re_date = r"\d{4}-\d{2}-\d{2}"
 
@@ -9,9 +14,21 @@ bp = Blueprint('v1_meet_table', __name__, url_prefix='/meet')
 
 @bp.route("/query", methods=["POST"])
 def http_query_meet_table():
+    start_timestamp = time.time() * 1000
+
     error_list = []
     start_date = request.form.get("date_start")
     end_date = request.form.get("date_end")
+    return_status = request.form.get("return_status")
+    if return_status:
+        max_limit = 30
+    else:
+        max_limit = 500
+
+    date_order = "desc" if not request.form.get("date_order") else request.form.get("date_order")
+    if not ['asc', 'desc'].__contains__(date_order):
+        error_list.append("Illegal param 'date_order', it should be 'asc' or 'desc'.")
+
     if not start_date or not end_date:
         error_list.append("Param 'date_start' and 'date_end' is required.")
         return gen_error_msg(error_list, 400)
@@ -23,27 +40,49 @@ def http_query_meet_table():
 
     try:
         limit = int(request.form.get("limit") if request.form.get("limit") else 20)
-        limit = 500 if limit > 500 else limit
+        limit = max_limit if limit > max_limit else limit
         limit = 1 if limit < 1 else limit
     except:
         error_list.append("Illegal param 'limit', it should be an integer.")
     try:
-        q_from = int(request.form.get("from") if request.form.get("from") else 0)
-        if q_from > 2147483647 or q_from < 0:
-            error_list.append("Illegal param 'from', it should be an integer.")
+        if request.form.get("page"):
+            page = int(request.form.get("page"))
+        else:
+            page = int(request.form.get("from") if request.form.get("from") else 0)
+        if page > 2147483647 or page < 0:
+            error_list.append("Illegal param 'page', it should be an integer.")
     except:
-        error_list.append("Illegal param 'from', it should be an integer.")
+        error_list.append("Illegal param 'page', it should be an integer.")
 
     if len(error_list) > 0:
         return gen_error_msg(error_list, 400)
 
-    result = query_meet_table(start_date=start_date, end_date=end_date, limit=limit, q_from=q_from)
+    cache_data = cache.get(f"http_query_meet_{start_date}_{end_date}_{date_order}_{limit}_{page}")
+    if cache_data:
+        result = json.loads(cache_data)
+        cached = True
+    else:
+        result = query_meet_table(start_date=start_date, end_date=end_date, limit=limit,
+                                  page=page, date_order=date_order)
+        if result['code'] != 0:
+            return result
+        result.__delitem__('code')
+        cache.set(f"http_query_meet_{start_date}_{end_date}_{date_order}_{limit}_{page}",
+                  json.dumps(result), ex=300)
+        cached = False
 
-    if result['code'] != 0:
-        return result
+    if return_status:
+        welink_id = get_cache_uid(request.headers.get('x-wlk-code'))
+        for index in range(len(result['data'])):
+            query_id = result['data'][index]['MeetID']
+            sub_result = get_sub_list(welink_id=welink_id, sub_type=1, sub_id=query_id)
+            if sub_result.get("length") > 0:
+                result['data'][index]['status'] = True
+            else:
+                result['data'][index]['status'] = False
 
-    result.__delitem__('code')
-
+    result['timeCost'] = time.time() * 1000 - start_timestamp
+    result['cached'] = cached
     return {
         "msg": "ok",
         "code": 0,
@@ -53,6 +92,7 @@ def http_query_meet_table():
 
 @bp.route("/count", methods=["POST"])
 def http_count_meet_table():
+    start_timestamp = time.time() * 1000
     error_list = []
 
     start_date = request.form.get("date_start")
@@ -67,11 +107,21 @@ def http_count_meet_table():
     if len(error_list) > 0:
         return gen_error_msg(error_list, 400)
 
-    result = count_meet_table(start_date=start_date, end_date=end_date)
-    if result['code'] != 0:
-        return result
-    result.__delitem__('code')
+    cache_data = cache.get(f"http_count_meet_{start_date}_{end_date}")
+    if cache_data:
+        result = json.loads(cache_data)
+        cached = True
+    else:
+        result = count_meet_table(start_date=start_date, end_date=end_date)
+        if result['code'] != 0:
+            return result
+        result.__delitem__('code')
+        cache.set(f"http_count_meet_{start_date}_{end_date}",
+                  json.dumps(result), ex=300)
+        cached = False
 
+    result['timeCost'] = time.time() * 1000 - start_timestamp
+    result['cached'] = cached
     return {
         "msg": "ok",
         "code": 0,

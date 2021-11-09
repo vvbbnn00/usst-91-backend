@@ -240,4 +240,4 @@ def delete_calendar(cal_id, welink_id):
 def get_cache_uid(code):
     if code == "development_header_token" and flaskConfig['ENV'] == 'development':
         return "lutiancheng_659@usst" # debug
-    return cache.get("welink_user_code_" + code)
+    return cache.get("welink_user_code_" + code).decode()
