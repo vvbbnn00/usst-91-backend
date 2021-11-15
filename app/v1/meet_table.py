@@ -69,6 +69,11 @@ def http_query_meet_table():
         result.__delitem__('code')
         cache.set(f"http_query_meet_{start_date}_{end_date}_{date_order}_{limit}_{page}",
                   json.dumps(result), ex=300)
+        for i in range(len(result['data'])):
+            result['data'][i]['MeetStart'] = str(result['data'][i]['MeetStart'])
+            result['data'][i]['MeetEnd'] = str(result['data'][i]['MeetEnd'])
+            result['data'][i]['AppStart'] = str(result['data'][i]['AppStart'])
+            result['data'][i]['AppEnd'] = str(result['data'][i]['AppEnd'])
         cached = False
 
     if return_status:
