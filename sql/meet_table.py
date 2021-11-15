@@ -27,9 +27,9 @@ def query_meet_table(start_date=None, end_date=None,
     db = db['sql']
     cursor = db.cursor()
     if start_date:
-        query_list.append(f"MeetStart>='{start_date}'")
+        query_list.append(f"MeetStart>='{start_date} 00:00:00'")
     if end_date:
-        query_list.append(f"MeetEnd<='{end_date}'")
+        query_list.append(f"MeetEnd<='{end_date} 23:59:59'")
     if _id:
         query_list.append(f"MeetID='{_id}'")
     if kw:
@@ -82,9 +82,9 @@ def count_meet_table(start_date=None, end_date=None, kw=None):
     db = db['sql']
     cursor = db.cursor()
     if start_date:
-        search_list.append(f"MeetStart>='{start_date}'")
+        search_list.append(f"MeetStart>='{start_date} 00:00:00'")
     if end_date:
-        search_list.append(f"MeetEnd<='{end_date}'")
+        search_list.append(f"MeetEnd<='{end_date} 23:59:59'")
     if kw:
         search_list.append(f"MeetName like '%{kw}%'")
 
