@@ -48,10 +48,10 @@ def query_meet_table(start_date=None, end_date=None,
                 "MeetID": item[0],
                 "MeetName": item[1],
                 "MeetAddress": item[2],
-                "MeetStart": item[3],
-                "MeetEnd": item[4],
-                "AppStart": item[5],
-                "AppEnd": item[6]
+                "MeetStart": str(item[3]),
+                "MeetEnd": str(item[4]),
+                "AppStart": str(item[5]),
+                "AppEnd": str(item[6])
             })
         db.close()
         return {
